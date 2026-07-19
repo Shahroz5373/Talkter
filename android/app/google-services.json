@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "589614765547",
+    "project_id": "my-talkter-flutter-app",
+    "storage_bucket": "my-talkter-flutter-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:589614765547:android:81bd4012a3a97387a9b5ae",
+        "android_client_info": {
+          "package_name": "com.example.talkter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSSYYHGaMQ0yGU0b0843kJY7XatY8e13s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
