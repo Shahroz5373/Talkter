@@ -42,7 +42,7 @@ class E2E {
     required this.otherPublicKey,
   });
 
-  //encryptt msg
+  /// Encrypt message
   Map<String, Uint8List> encrypt(String message) {
     final nonce = sodium.randombytes.buf(sodium.crypto.box.nonceBytes);
 
@@ -56,7 +56,7 @@ class E2E {
     return {"cipher": encrypted, "nonce": nonce};
   }
 
-  // decrypt msg
+  /// Decrypt message
   String decrypt({required Uint8List cipher, required Uint8List nonce}) {
     final decrypted = sodium.crypto.box.openEasy(
       cipherText: cipher,

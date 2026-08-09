@@ -91,7 +91,6 @@ class BGDesign extends StatelessWidget {
           ),
         ),
 
-        // 5. Small crisp white accent – centre energy
         Positioned(
           top: MediaQuery.of(context).size.height * 0.35,
           left: MediaQuery.of(context).size.width * 0.15,
@@ -110,7 +109,6 @@ class BGDesign extends StatelessWidget {
           ),
         ),
 
-        // 6. Tiny sparkling cyan dot
         Positioned(
           top: MediaQuery.of(context).size.height * 0.7,
           right: 30,
@@ -128,11 +126,6 @@ class BGDesign extends StatelessWidget {
             ),
           ),
         ),
-
-        // NOTE: I removed the full‑screen blur layer.
-        // The background MUST stay sharp for glassmorphism to pop.
-        // Instead, you'll apply the blur inside the glass container
-        // (using ClipRRect + BackdropFilter) that sits on top.
       ],
     );
   }

@@ -13,23 +13,19 @@ class GlassMorphicContainer extends StatelessWidget {
     this.height,
   });
 
-  static const double _blurStrength = 14.0;
-  //static const double _borderRadius = 25.0;
-  static const double _borderWidth = 1.2;
-
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(25),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: _blurStrength, sigmaY: _blurStrength),
+        filter: ImageFilter.blur(sigmaX: 13, sigmaY: 13),
         child: Container(
-          width: width, // null → sizes to child
-          height: height, // null → sizes to child
+          width: width,
+          height: height,
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.25),
+                color: Colors.black.withValues(alpha: 0.25),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -37,12 +33,10 @@ class GlassMorphicContainer extends StatelessWidget {
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              // Use the actual width (if constrained) for the rim highlight
               final containerWidth = constraints.maxWidth;
               return Stack(
                 clipBehavior: Clip.antiAlias,
                 children: [
-                  // Main glass body
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -50,14 +44,14 @@ class GlassMorphicContainer extends StatelessWidget {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Colors.white.withOpacity(0.25),
-                          Colors.white.withOpacity(0.08),
+                          Colors.white.withValues(alpha: 0.25),
+                          Colors.white.withValues(alpha: 0.08),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(25),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.35),
-                        width: _borderWidth,
+                        color: Colors.white.withValues(alpha: 0.35),
+                        width: 1.2,
                       ),
                     ),
                     child: Padding(
@@ -65,7 +59,7 @@ class GlassMorphicContainer extends StatelessWidget {
                       child: child,
                     ),
                   ),
-                  // Top rim highlight – now respects dynamic width
+
                   if (containerWidth > 0)
                     Positioned(
                       top: 0,
@@ -80,9 +74,9 @@ class GlassMorphicContainer extends StatelessWidget {
                           borderRadius: BorderRadius.circular(2),
                           gradient: LinearGradient(
                             colors: [
-                              Colors.white.withOpacity(0.0),
-                              Colors.white.withOpacity(0.6),
-                              Colors.white.withOpacity(0.0),
+                              Colors.white.withValues(alpha: 0.0),
+                              Colors.white.withValues(alpha: 0.6),
+                              Colors.white.withValues(alpha: 0.0),
                             ],
                           ),
                         ),

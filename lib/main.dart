@@ -1,9 +1,14 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:talkter/constants/bg/bg.dart';
-import 'package:talkter/constants/glass_container/glassmorphic_container.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talkter/firebase_options.dart';
+import 'package:talkter/screens/user_registeration/registration/register.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -12,24 +17,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Stack(
-          children: [
-            BGDesign(),
-            Center(
-              child: GlassMorphicContainer(
-                child: Text("""
-
-jhon wick 
-
-
-""", style: TextStyle(color: Colors.white)),
-              ),
-            ),
-          ],
-        ),
-      ),
+      color: Colors.transparent,
+      debugShowCheckedModeBanner: false,
+      home: RegisterPage(),
     );
   }
 }
