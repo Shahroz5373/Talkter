@@ -1,27 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:talkter/Services/auth/auth_service.dart';
-import 'package:talkter/screens/home/home_screen.dart';
+import 'package:talkter/screens/user_registeration/Phone/page/riverpod/phone_id_provider.dart';
+import 'package:talkter/designs/snack_bar/snack_bar.dart';
 
-class OtpInputField extends StatefulWidget {
-  final String verificationId;
-  const OtpInputField({super.key, required this.verificationId});
+class OtpInputField extends ConsumerStatefulWidget {
+  final VoidCallback onNext;
+
+  const OtpInputField({super.key, required this.onNext});
 
   @override
-  State<OtpInputField> createState() => _OtpInputFieldState();
+  ConsumerState<OtpInputField> createState() => _OtpInputFieldState();
 }
 
-class _OtpInputFieldState extends State<OtpInputField> {
+class _OtpInputFieldState extends ConsumerState<OtpInputField> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController otpController = TextEditingController();
   final AuthService _auth = AuthService();
+
+  bool isLoading = false;
 
   @override
   void dispose() {
     otpController.dispose();
     super.dispose();
+  }
+
+  void verifyCode() async {
+    if (formKey.currentState!.validate()) {
+      setState(() => isLoading = true);
+
+      final verifyID = ref.read(verificationIdProvider);
+      try {
+        final user = await _auth.verifyOtp(
+          verificationId: verifyID,
+          smsCode: otpController.text.trim(),
+        );
+
+        if (user != null && mounted) {
+          setState(() => isLoading = false);
+
+          widget.onNext();
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => isLoading = false);
+
+          AppSnackBar.failure(
+            context,
+            title: 'Verification Failed',
+            Message: e.toString(),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -102,47 +138,35 @@ class _OtpInputFieldState extends State<OtpInputField> {
               );
             },
           ),
-
           const SizedBox(height: 20),
 
-          TextButton.icon(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                try {
-                  final user = await _auth.verifyOtp(
-                    verificationId: widget.verificationId,
-                    smsCode: otpController.text.trim(),
-                  );
-                  if (user != null && mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      //we pass to home screen for test that otp is working or not
-                      MaterialPageRoute(builder: (_) => HomeScreen()),
-                    );
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(e.toString())));
-                }
-              }
-            },
-            icon: const Icon(Icons.verified, color: Colors.white, size: 20),
-            label: Text(
-              'Verify OTP',
-              style: GoogleFonts.inter(
-                textStyle: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+          isLoading
+              ? const SpinKitThreeBounce(color: Colors.white, size: 20)
+              : TextButton.icon(
+                  onPressed: verifyCode,
+                  icon: const Icon(
+                    Icons.verified,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  label: Text(
+                    'Verify OTP',
+                    style: GoogleFonts.inter(
+                      textStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.white.withValues(alpha: 0.35),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 13,
+                      horizontal: 35,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.white.withValues(alpha: 0.35),
-              padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 35),
-            ),
-          ),
         ],
       ),
     );

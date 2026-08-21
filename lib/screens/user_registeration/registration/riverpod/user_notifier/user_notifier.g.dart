@@ -20,7 +20,7 @@ final class UserNotifierProvider
         argument: null,
         retry: null,
         name: r'userProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -41,7 +41,7 @@ final class UserNotifierProvider
   }
 }
 
-String _$userNotifierHash() => r'546b8c151a590f99fcaa03cfab2f766f4a8d72b1';
+String _$userNotifierHash() => r'ede6b7493a66911f7f5514234a1a21cc21692b2a';
 
 abstract class _$UserNotifier extends $Notifier<UserInfo?> {
   UserInfo? build();

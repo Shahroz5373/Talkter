@@ -1,4 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -6,27 +8,44 @@ class AuthService {
   Future<void> registerWithPhone({
     required String phoneNum,
     required Function(String verificationId) onCodeSent,
+    required Function(FirebaseAuthException error) onVerificationFailed,
   }) async {
+    debugPrint('📱 Sending phone to Firebase: $phoneNum');
+
     await _auth.verifyPhoneNumber(
       phoneNumber: phoneNum,
 
       verificationCompleted: (PhoneAuthCredential credential) async {
-        await _auth.signInWithCredential(credential);
+        debugPrint('Verification completed automatically');
+
+        try {
+          await _auth.signInWithCredential(credential);
+        } on FirebaseAuthException catch (e) {
+          onVerificationFailed(e);
+        }
       },
 
       verificationFailed: (FirebaseAuthException e) {
-        throw e.message ?? "Phone verification failed";
+        debugPrint('Firebase verification failed');
+        debugPrint('Code: ${e.code}');
+        debugPrint('Message: ${e.message}');
+
+        onVerificationFailed(e);
       },
 
       codeSent: (String verificationId, int? resendToken) {
+        debugPrint('OTP SENT');
+        debugPrint('Verification ID: $verificationId');
+
         onCodeSent(verificationId);
       },
 
-      codeAutoRetrievalTimeout: (String verificationId) {},
+      codeAutoRetrievalTimeout: (String verificationId) {
+        debugPrint(' Auto retrieval timeout');
+      },
     );
   }
 
-  // verify OTP
   Future<AppUser?> verifyOtp({
     required String verificationId,
     required String smsCode,
@@ -41,7 +60,7 @@ class AuthService {
 
       return _userFromFirebase(result.user);
     } on FirebaseAuthException catch (e) {
-      throw e.message ?? "Invalid OTP!";
+      throw e;
     }
   }
 
@@ -49,12 +68,10 @@ class AuthService {
     await _auth.signOut();
   }
 
-  // gets user id
   AppUser? _userFromFirebase(User? user) {
     return user == null ? null : AppUser(userId: user.uid);
   }
 
-  // stream (for Riverpod)
   Stream<AppUser?> get user {
     return _auth.authStateChanges().map(_userFromFirebase);
   }
