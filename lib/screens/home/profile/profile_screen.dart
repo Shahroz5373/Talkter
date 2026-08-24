@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:talkter/screens/user_registeration/registration/riverpod/user_notifier/user_notifier.dart';
-import 'package:talkter/designs/glassmorphic_cotainer/glassmorphic_container.dart';
+import 'package:talkter/widgets/glassmorphic_cotainer/glassmorphic_container.dart';
 
-class UserProfile extends ConsumerStatefulWidget {
-  const UserProfile({super.key});
+class ProfileScreen extends ConsumerStatefulWidget {
+  const ProfileScreen({super.key});
 
   @override
-  ConsumerState<UserProfile> createState() => _UserProfileState();
+  ConsumerState<ProfileScreen> createState() => _UserProfileState();
 }
 
-class _UserProfileState extends ConsumerState<UserProfile> {
+class _UserProfileState extends ConsumerState<ProfileScreen> {
   bool isSwitched = true;
 
   @override

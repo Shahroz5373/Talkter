@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:talkter/Services/cloudinary/upload/cloudinary_upload_result.dart';
 import 'package:talkter/screens/user_registeration/registration/riverpod/model/user_notifier_model.dart';
 
 class DatabaseService {
@@ -6,7 +7,8 @@ class DatabaseService {
 
   Future<void> saveUserData({
     required UserInfo user,
-    required String public_key,
+    required String publicKey,
+    required CloudinaryUploadResult profilePic,
   }) async {
     try {
       if (user.phone.isEmpty) throw Exception("Phone number is missing");
@@ -16,7 +18,9 @@ class DatabaseService {
         'username': user.userName,
         'email': user.email,
         'phone': user.phone,
-        'public_key': public_key,
+        'public_key': publicKey,
+        'profile_pic_url': profilePic.avatar_url,
+        'profile_pic_id': profilePic.avatar_public_id,
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
@@ -24,7 +28,7 @@ class DatabaseService {
     }
   }
 
-  // 2. Update existing user data
+  // Update existing user data
   Future<void> updateUserData(
     String phone,
     Map<String, dynamic> updateData,

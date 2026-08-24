@@ -6,7 +6,7 @@ import 'package:pinput/pinput.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:talkter/Services/auth/auth_service.dart';
 import 'package:talkter/screens/user_registeration/Phone/page/riverpod/phone_id_provider.dart';
-import 'package:talkter/designs/snack_bar/snack_bar.dart';
+import 'package:talkter/widgets/snack_bar/snack_bar.dart';
 
 class OtpInputField extends ConsumerStatefulWidget {
   final VoidCallback onNext;

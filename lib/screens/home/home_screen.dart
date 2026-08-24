@@ -1,86 +1,62 @@
-// import 'package:flutter/material.dart';
-// import 'package:talkter/Services/auth/auth_service.dart';
-// import 'package:talkter/designs/bg_design/bg_design.dart';
-
-// import 'package:talkter/screens/home/chat/chat_screen.dart';
-// import 'package:talkter/screens/home/notifications/notifications.dart';
-// import 'package:talkter/screens/home/profile/user_profile.dart';
-// import 'package:talkter/screens/home/search/search.dart';
-// import 'package:talkter/screens/user_registeration/registration/register.dart';
-
-// class HomeScreen extends StatefulWidget {
-//   const HomeScreen({super.key});
-//   @override
-//   State<HomeScreen> createState() => _HomeScreenState();
-// }
-
-// class _HomeScreenState extends State<HomeScreen> {
-//   final AuthService _auth = AuthService();
-//   int currentPageIndex = 0;
-//   List<Widget> pages = [ChatScreen(), Search(), Notifications(), UserProfile()];
-//   @override
-//   Widget build(BuildContext context) {
-//     // return CustomBottomNavBar();
-//     return Stack(
-//       children: [
-//         const BGDesign(),
-//         Scaffold(
-//           backgroundColor: Colors.transparent,
-//           appBar: AppBar(
-//             elevation: 0,
-//             backgroundColor: Colors.transparent,
-//             actions: [
-//               IconButton(
-//                 onPressed: () async {
-//                   await _auth.signOut();
-//                   if (mounted) {
-//                     Navigator.pushReplacement(
-//                       context,
-//                       MaterialPageRoute(builder: (_) => RegisterPage()),
-//                     );
-//                   }
-//                 },
-//                 icon: Icon(Icons.logout_rounded, color: Colors.white, size: 28),
-//               ),
-//             ],
-//           ),
-//           body: Center(child: pages[currentPageIndex]),
-//           bottomNavigationBar: CustomBottomNavBar(
-//             onPageIndexChanged: (index) {
-//               setState(() => currentPageIndex = index);
-//             },
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
-import 'package:talkter/designs/bg_design/bg_design.dart';
-import 'package:talkter/designs/glassmorphic_cotainer/glassmorphic_container.dart';
+import 'package:talkter/screens/home/chat/chat_screen.dart';
+import 'package:talkter/screens/home/notifications/notifications.dart';
+import 'package:talkter/screens/home/profile/profile_screen.dart';
+import 'package:talkter/screens/home/search/search.dart';
+import 'package:talkter/widgets/bg_design/bg_design.dart';
+import 'package:talkter/widgets/bottom_nav_bar/bottom_nav_bar.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int currentIndex = 0;
+  final _pageController = PageController(initialPage: 0);
+  List<Widget> screens = [
+    ChatScreen(),
+    SearchScreen(currentUserPhone: "+923268594002"),
+    Notifications(),
+    ProfileScreen(),
+  ];
+
+  void onTabChanged(int index) {
+    setState(() => currentIndex = index);
+    _pageController.animateToPage(
+      index,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.bounceInOut,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            BGDesign(),
-            Center(
-              child: GlassMorphicContainer(
-                child: Text(
-                  "Hello Home Page",
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
+    return Stack(
+      children: [
+        const BGDesign(),
+        Scaffold(
+          extendBody: true,
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
+            child: Container(
+              padding: EdgeInsets.all(15),
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (index) => setState(() => currentIndex = index),
+                children: screens,
+                // physics: ,
               ),
             ),
-          ],
+          ),
+          bottomNavigationBar: CustomBottomBar(
+            currentIndex: currentIndex,
+            onTap: onTabChanged,
+          ),
         ),
-      ),
+      ],
     );
   }
 }

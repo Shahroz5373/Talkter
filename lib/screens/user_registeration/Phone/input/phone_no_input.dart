@@ -35,8 +35,9 @@ class _RegisterPhoneState extends State<RegisterPhone> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      //margin: const EdgeInsets.symmetric(horizontal: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+
       decoration: BoxDecoration(
         border: Border.all(
           color: phoneController.isValid
@@ -71,7 +72,7 @@ class _RegisterPhoneState extends State<RegisterPhone> {
             inputDecoration: const InputDecoration(
               hintText: "Enter phone number",
               hintStyle: TextStyle(color: Color.fromARGB(255, 203, 200, 200)),
-              contentPadding: EdgeInsets.only(bottom: 10),
+              contentPadding: EdgeInsets.only(bottom: 12),
               border: InputBorder.none,
             ),
 

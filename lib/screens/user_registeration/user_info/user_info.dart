@@ -1,17 +1,16 @@
-import 'dart:io'; // Needed for File
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:talkter/Services/cloudinary/pick_image/pick_image.dart';
-import 'package:talkter/Services/cloudinary/riverpod/upload_provider.dart';
+import 'package:talkter/Services/cloudinary/riverpod/file_path/file_path_provider.dart';
 import 'package:talkter/screens/user_registeration/registration/riverpod/user_notifier/user_notifier.dart';
-import 'package:talkter/designs/glassmorphic_cotainer/glassmorphic_container.dart';
-import 'package:talkter/designs/snack_bar/snack_bar.dart';
+import 'package:talkter/widgets/glassmorphic_cotainer/glassmorphic_container.dart';
+import 'package:talkter/widgets/snack_bar/snack_bar.dart';
 
 class UserInfoPage extends ConsumerStatefulWidget {
-  // final VoidCallback onNext;
+  final VoidCallback onNext;
 
-  const UserInfoPage({super.key});
+  const UserInfoPage({super.key, required this.onNext});
 
   @override
   ConsumerState<UserInfoPage> createState() => _UserInfoPageState();
@@ -24,11 +23,6 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
 
   final _formKey = GlobalKey<FormState>();
 
-  // --- New Variables for Image Upload ---
-  File? _profileImage;
-  bool _isUploadingImage = false;
-  String? _uploadedAvatarUrl;
-
   @override
   void dispose() {
     _nameController.dispose();
@@ -39,57 +33,26 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
 
   Future<void> _handleImageSelection() async {
     final imageHelper = PickImage();
-    final croppedFile = await imageHelper.pickImage();
-
-    if (croppedFile != null) {
-      setState(() {
-        _profileImage = croppedFile;
-        _isUploadingImage = true;
-      });
-
-      try {
-        // Read your Cloudinary service provider
-        final cloudinary = ref.read(cloudinaryServiceProvider);
-        final result = await cloudinary.uploadProfileImage(
-          imageFile: _profileImage!,
-        );
-
-        setState(() {
-          _uploadedAvatarUrl = result.avatar_url;
-        });
-
-        // Optional: Show a success snackbar
-        AppSnackBar.success(
-          context,
-          title: 'Success',
-          Message: 'Profile picture uploaded!',
-        );
-      } catch (e) {
-        setState(() {
-          _profileImage = null; // Revert on fail
-        });
-        AppSnackBar.failure(
-          context,
-          title: 'Upload Failed',
-          Message: e.toString(),
-        );
-      } finally {
-        setState(() {
-          _isUploadingImage = false;
-        });
-      }
-    }
+    final profilePic = await imageHelper.pickImage();
+    ref.read(uploadPathProvider.notifier).steUploadFilePath(profilePic);
   }
 
   void _saveUserInfo() {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-
+    final profilePic = ref.read(uploadPathProvider);
+    if (profilePic == null) {
+      AppSnackBar.failure(
+        context,
+        title: 'Profile Picture Required',
+        Message: 'Please tap the icon above and pick a profile picture.',
+      );
+      return;
+    }
     final user = ref.read(userProvider);
 
     if (user?.phone == null || user!.phone.isEmpty) {
-      print(user);
       AppSnackBar.failure(
         context,
         title: 'Error',
@@ -98,18 +61,15 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
       return;
     }
 
-    // Save to Riverpod
     ref
         .read(userProvider.notifier)
         .updateUser(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
           userName: _userNameController.text.trim(),
-          // TODO: If your updateUser method accepts an avatar URL, pass it here!
-          // avatarUrl: _uploadedAvatarUrl,
         );
 
-    // widget.onNext();
+    widget.onNext();
   }
 
   InputDecoration _customInputDecoration({
@@ -153,9 +113,11 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final profileImage = ref.watch(uploadPathProvider);
+
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 18),
         child: GlassMorphicContainer(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -185,54 +147,33 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                   ),
                   const SizedBox(height: 24),
 
-                  // --- AVATAR UPLOAD WIDGET ---
                   Center(
                     child: GestureDetector(
-                      onTap: _isUploadingImage ? null : _handleImageSelection,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.2),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.5),
-                                width: 2,
-                              ),
-                              image: _profileImage != null
-                                  ? DecorationImage(
-                                      image: FileImage(_profileImage!),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
-                            ),
-                            child: _profileImage == null
-                                ? const Icon(
-                                    Icons.add_a_photo_outlined,
-                                    color: Colors.white70,
-                                    size: 40,
-                                  )
-                                : null,
+                      onTap: _handleImageSelection,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.2),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.5),
+                            width: 2,
                           ),
-                          // Show loading spinner over the image while uploading
-                          if (_isUploadingImage)
-                            Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.black.withValues(alpha: 0.5),
-                              ),
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                        ],
+                          image: profileImage != null
+                              ? DecorationImage(
+                                  image: FileImage(profileImage),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: profileImage == null
+                            ? const Icon(
+                                Icons.add_a_photo_outlined,
+                                color: Colors.white70,
+                                size: 40,
+                              )
+                            : null,
                       ),
                     ),
                   ),
@@ -247,7 +188,6 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  // --- END AVATAR UPLOAD WIDGET ---
 
                   // NAME
                   TextFormField(
@@ -354,7 +294,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                       backgroundColor: Colors.white.withValues(alpha: 0.35),
                       padding: const EdgeInsets.symmetric(vertical: 13),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(25),
                       ),
                     ),
                   ),

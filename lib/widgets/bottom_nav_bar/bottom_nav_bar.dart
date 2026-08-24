@@ -16,9 +16,10 @@ class CustomBottomBar extends StatefulWidget {
 
 class _CustomBottomBarState extends State<CustomBottomBar> {
   final List<String> icons = [
-    "assets/svg/trophy.svg",
-    "assets/svg/swords.svg",
-    "assets/svg/user.svg",
+    'assets/icons/chat.svg',
+    'assets/icons/search.svg',
+    'assets/icons/notification.svg',
+    'assets/icons/user.svg',
   ];
 
   @override
@@ -31,7 +32,7 @@ class _CustomBottomBarState extends State<CustomBottomBar> {
         gradient: RadialGradient(
           radius: 4,
           colors: [
-            Colors.cyanAccent.withValues(alpha: 0.2),
+            Colors.cyanAccent.withValues(alpha: 0.27),
             Colors.white.withValues(alpha: 0.3),
           ],
         ),
@@ -43,9 +44,7 @@ class _CustomBottomBarState extends State<CustomBottomBar> {
             svgPath: icons[index],
             isSelected: widget.currentIndex == index,
             onTap: () {
-              setState(() {
-                widget.onTap(index);
-              });
+              setState(() => widget.onTap(index));
             },
           );
         }),
@@ -121,7 +120,7 @@ class _NavItemsState extends State<NavItems>
             angle: rotation.value,
             child: AnimatedScale(
               scale: widget.isSelected ? 1.3 : scale,
-              duration: const Duration(seconds: 6),
+              duration: const Duration(seconds: 2),
               curve: Curves.easeOutBack,
               child: SvgPicture.asset(
                 widget.svgPath,
