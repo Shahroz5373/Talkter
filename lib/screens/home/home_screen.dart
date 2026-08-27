@@ -18,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _pageController = PageController(initialPage: 0);
   List<Widget> screens = [
     ChatScreen(),
-    SearchScreen(currentUserPhone: "+923268594002"),
+    SearchScreen(),
     Notifications(),
     ProfileScreen(),
   ];

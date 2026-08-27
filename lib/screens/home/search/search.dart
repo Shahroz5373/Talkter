@@ -1,368 +1,268 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:talkter/Services/friends_service/friends_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:talkter/Services/friends_action_service/friends_action_service.dart';
 import 'package:talkter/screens/home/search/search_user_tile/search_user_tile.dart';
 import 'package:talkter/widgets/snack_bar/snack_bar.dart';
+import 'package:talkter/screens/user_registeration/Phone/input/phone_no_input.dart';
 
 class SearchScreen extends StatefulWidget {
-  final String currentUserPhone;
-
-  const SearchScreen({super.key, required this.currentUserPhone});
+  const SearchScreen({super.key});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final TextEditingController _countryCodeController = TextEditingController(
-    text: "92",
-  );
-  final TextEditingController _phoneController = TextEditingController();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FriendsService _friendsService = FriendsService();
+  final FriendsActionService _friendsService = FriendsActionService();
+
+  // State variables for the phone input component
+  String _searchInputPhone = '';
+  bool _isSearchPhoneValid = false;
 
   bool _isLoading = false;
   Map<String, dynamic>? _searchedUserData;
-  FriendshipStatus _friendshipStatus = FriendshipStatus.none;
-
-  @override
-  void dispose() {
-    _countryCodeController.dispose();
-    _phoneController.dispose();
-    super.dispose();
-  }
-
-  String _formatPhoneNumber(String countryCode, String phone) {
-    String cleanCountry = countryCode.replaceAll(RegExp(r'[^0-9]'), '');
-    String cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
-
-    return '+$cleanCountry$cleanPhone';
-  }
+  String _searchedPhone = '';
+  FriendshipStatus _currentStatus = FriendshipStatus.none;
 
   Future<void> _performSearch() async {
-    FocusScope.of(context).unfocus();
+    final String myPhoneNo =
+        FirebaseAuth.instance.currentUser?.phoneNumber ?? '+923268594002';
 
-    if (_countryCodeController.text.trim().isEmpty ||
-        _phoneController.text.trim().isEmpty) {
+    if (myPhoneNo.isEmpty) {
+      AppSnackBar.failure(
+        context,
+        title: 'Auth Error',
+        Message: 'Could not get your phone number. Try logging in again.',
+      );
+      return;
+    }
+
+    // 2. Validate using the state from your RegisterPhone widget
+    if (_searchInputPhone.isEmpty || !_isSearchPhoneValid) {
       AppSnackBar.warning(
         context,
-        title: "Missing Info",
-        Message: "Please enter both country code and phone number.",
+        title: 'Invalid Number',
+        Message: 'Please enter a valid phone number with country code.',
       );
       return;
     }
 
     setState(() {
       _isLoading = true;
-      _searchedUserData = null;
+      _searchedUserData = null; // Clear previous search results
     });
 
     try {
-      final formattedPhone = _formatPhoneNumber(
-        _countryCodeController.text,
-        _phoneController.text,
-      );
-
-      final userDoc = await _firestore
+      // 3. Fetch the searched user's document
+      final userDoc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(formattedPhone)
+          .doc(_searchInputPhone)
           .get();
 
-      if (!userDoc.exists) {
-        setState(() => _isLoading = false);
-        if (mounted) {
-          AppSnackBar.failure(
-            context,
-            title: "Not Found",
-            Message: "No user found with the number $formattedPhone.",
-          );
-        }
-        return;
-      }
+      if (userDoc.exists) {
+        FriendshipStatus status = FriendshipStatus.none;
 
-      FriendshipStatus status = FriendshipStatus.none;
-
-      if (formattedPhone == widget.currentUserPhone) {
-        status = FriendshipStatus.self;
-      } else {
-        final friendDoc = await _firestore
-            .collection('users')
-            .doc(widget.currentUserPhone)
-            .collection('friends')
-            .doc(formattedPhone)
-            .get();
-
-        if (friendDoc.exists) {
-          status = FriendshipStatus.friends;
+        if (_searchInputPhone == myPhoneNo) {
+          status = FriendshipStatus.self;
         } else {
-          final pendingDoc = await _firestore
+          // 4. Optimized single-read check for friendship status
+          final friendDoc = await FirebaseFirestore.instance
               .collection('users')
-              .doc(formattedPhone)
-              .collection('friend_requests')
-              .doc(widget.currentUserPhone)
+              .doc(myPhoneNo)
+              .collection('friends')
+              .doc(_searchInputPhone)
               .get();
 
-          if (pendingDoc.exists) {
-            status = FriendshipStatus.pending;
+          if (friendDoc.exists) {
+            final docStatus = friendDoc.data()?['status'];
+            if (docStatus == 'accepted') {
+              status = FriendshipStatus.friends;
+            } else if (docStatus == 'requested' || docStatus == 'pending') {
+              status = FriendshipStatus.pending;
+            }
           }
         }
-      }
 
-      setState(() {
-        _searchedUserData = userDoc.data();
-        _friendshipStatus = status;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
+        setState(() {
+          _searchedUserData = userDoc.data();
+          _searchedPhone = _searchInputPhone;
+          _currentStatus = status;
+        });
+      } else {
         AppSnackBar.failure(
           context,
-          title: "Error",
-          Message: "An error occurred while searching. Please try again.",
+          title: 'Not Found',
+          Message: 'No user is registered with this phone number.',
         );
       }
+    } catch (e) {
+      AppSnackBar.failure(
+        context,
+        title: 'Error',
+        Message: 'Something went wrong: $e',
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  Future<void> _handleFriendAction() async {
-    if (_searchedUserData == null) return;
+  /// Sends a friend request and updates UI
+  Future<void> _sendRequest() async {
+    final String myPhoneNo =
+        FirebaseAuth.instance.currentUser?.phoneNumber ?? '';
 
-    final targetPhone = _searchedUserData!['phone'];
+    if (myPhoneNo.isEmpty) return;
+
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
-      if (_friendshipStatus == FriendshipStatus.none) {
-        await _friendsService.sendFriendRequest(
-          myPhoneNo: widget.currentUserPhone,
-          friendPhoneNo: targetPhone,
-        );
+      await _friendsService.sendFriendRequest(
+        myPhoneNo: myPhoneNo,
+        friendPhoneNo: _searchedPhone,
+      );
 
-        setState(() => _friendshipStatus = FriendshipStatus.pending);
+      setState(() {
+        _currentStatus = FriendshipStatus.pending;
+      });
 
-        if (mounted) {
-          AppSnackBar.success(
-            context,
-            title: "Request Sent",
-            Message: "Friend request sent to ${_searchedUserData!['name']}!",
-          );
-        }
-      } else if (_friendshipStatus == FriendshipStatus.pending) {
-        await _friendsService.removeOrRejectFriend(
-          userPhone: widget.currentUserPhone,
-          friendPhone: targetPhone,
-        );
-
-        setState(() => _friendshipStatus = FriendshipStatus.none);
-
-        if (mounted) {
-          AppSnackBar.warning(
-            context,
-            title: "Request Cancelled",
-            Message: "You cancelled the friend request.",
-          );
-        }
-      }
+      AppSnackBar.success(
+        context,
+        title: 'Request Sent',
+        Message: 'Friend request sent to $_searchedPhone.',
+      );
     } catch (e) {
-      if (mounted) {
-        AppSnackBar.failure(
-          context,
-          title: "Action Failed",
-          Message: e.toString(),
-        );
-      }
+      AppSnackBar.failure(
+        context,
+        title: 'Failed',
+        Message: e.toString().replaceAll("Exception: ", ""),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Find Friends",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
+      child: Column(
+        children: [
+          // --- CUSTOM HEADER ---
+          Text(
+            'Add Friends',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.2,
             ),
-            const SizedBox(height: 5),
-            Text(
-              "Search by phone number to connect.",
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 14,
+          ),
+          const SizedBox(height: 20),
+          // --- REUSABLE PHONE INPUT + SEARCH BUTTON ---
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: RegisterPhone(
+                  onPhoneChanged: (phone) {
+                    setState(() {
+                      _searchInputPhone = phone;
+                    });
+                  },
+                  onValidationChanged: (isValid) {
+                    setState(() {
+                      _isSearchPhoneValid = isValid;
+                    });
+                  },
+                ),
               ),
-            ),
-            const SizedBox(height: 25),
-            Row(
-              children: [
-                Container(
-                  width: 80,
-                  height: 55,
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: _isLoading ? null : _performSearch,
+                child: Container(
+                  height: 55, // Matches roughly with your RegisterPhone height
+                  width: 55,
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(15),
+                    color: Colors.cyanAccent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: Colors.cyanAccent.withValues(alpha: 0.3),
                       width: 1.5,
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "+",
-                        style: TextStyle(
-                          color: Colors.cyanAccent,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 45,
-                        child: TextField(
-                          controller: _countryCodeController,
-                          keyboardType: TextInputType.number,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    height: 55,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(
-                        color: Colors.cyanAccent.withValues(alpha: 0.3),
-                        width: 1.5,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: TextField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Phone Number",
-                        hintStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      onSubmitted: (_) => _performSearch(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: _performSearch,
-                  child: Container(
-                    height: 55,
-                    width: 55,
-                    decoration: BoxDecoration(
-                      color: Colors.cyanAccent.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: Colors.cyanAccent, width: 1.5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.cyanAccent.withValues(alpha: 0.2),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                    child: _isLoading
-                        ? const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: CircularProgressIndicator(
+                  child: _isLoading
+                      ? const Center(
+                          child: SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: SpinKitThreeBounce(
                               color: Colors.cyanAccent,
-                              strokeWidth: 2.5,
+                              size: 50,
                             ),
-                          )
-                        : const Icon(
-                            Icons.search_rounded,
-                            color: Colors.cyanAccent,
-                            size: 26,
                           ),
-                  ),
+                        )
+                      : const Icon(
+                          Icons.search_rounded,
+                          color: Colors.cyanAccent,
+                          size: 28,
+                        ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 40),
-            Expanded(child: _buildResultsArea()),
-          ],
-        ),
-      ),
-    );
-  }
+              ),
+            ],
+          ),
 
-  Widget _buildResultsArea() {
-    if (_isLoading) {
-      return const Center(child: SizedBox.shrink());
-    }
+          const SizedBox(height: 30),
 
-    if (_searchedUserData == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.person_search_rounded,
-              size: 80,
-              color: Colors.white.withValues(alpha: 0.1),
+          // --- SEARCH RESULTS ---
+          if (_searchedUserData != null)
+            SearchUserTile(
+              name: _searchedUserData!['name'] ?? 'Unknown',
+              username: _searchedUserData!['username'] ?? 'unknown',
+              phoneNumber: _searchedPhone,
+              profilePicUrl: _searchedUserData!['profilePic'] ?? '',
+              status: _currentStatus,
+              onActionButtonPressed: () {
+                if (_currentStatus == FriendshipStatus.none) {
+                  _sendRequest();
+                }
+              },
             ),
-            const SizedBox(height: 16),
-            Text(
-              "Search for someone to chat with",
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.4),
-                fontSize: 15,
+
+          // Illustration or instruction text when empty
+          if (_searchedUserData == null && !_isLoading)
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.person_search_rounded,
+                      size: 80,
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Search for a friend via their phone number.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 14, bottom: 10),
-          child: Text(
-            "Result",
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        SearchUserTile(
-          name: _searchedUserData!['name'] ?? 'Unknown User',
-          username: _searchedUserData!['username'] ?? 'no_username',
-          profilePicUrl: _searchedUserData!['profile_pic_url'],
-          status: _friendshipStatus,
-          onActionButtonPressed: _handleFriendAction,
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

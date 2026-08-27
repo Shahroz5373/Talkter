@@ -41,7 +41,7 @@ class _RegisterPhoneState extends State<RegisterPhone> {
       decoration: BoxDecoration(
         border: Border.all(
           color: phoneController.isValid
-              ? const Color.fromARGB(255, 61, 187, 65)
+              ? Colors.cyanAccent.withValues(alpha: 0.3)
               : Colors.white,
           width: 1.5,
         ),

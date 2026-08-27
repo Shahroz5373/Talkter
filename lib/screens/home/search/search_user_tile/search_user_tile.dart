@@ -6,6 +6,7 @@ enum FriendshipStatus { none, pending, friends, self }
 class SearchUserTile extends StatelessWidget {
   final String name;
   final String username;
+  final String phoneNumber;
   final String? profilePicUrl;
   final FriendshipStatus status;
   final VoidCallback? onActionButtonPressed;
@@ -15,6 +16,7 @@ class SearchUserTile extends StatelessWidget {
     super.key,
     required this.name,
     required this.username,
+    required this.phoneNumber,
     this.profilePicUrl,
     this.status = FriendshipStatus.none,
     this.onActionButtonPressed,
@@ -70,7 +72,8 @@ class SearchUserTile extends StatelessWidget {
                       ],
                     ),
                     child: CircleAvatar(
-                      radius: 26,
+                      radius:
+                          28, // Slightly larger to balance the 3 lines of text
                       backgroundColor: Colors.white.withValues(alpha: 0.1),
                       backgroundImage:
                           (profilePicUrl != null && profilePicUrl!.isNotEmpty)
@@ -81,7 +84,7 @@ class SearchUserTile extends StatelessWidget {
                               name.isNotEmpty ? name[0].toUpperCase() : '?',
                               style: const TextStyle(
                                 color: Colors.cyanAccent,
-                                fontSize: 20,
+                                fontSize: 22,
                                 fontWeight: FontWeight.bold,
                               ),
                             )
@@ -108,16 +111,42 @@ class SearchUserTile extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
                         Text(
                           "@$username",
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w400,
+                            color: Colors.cyanAccent.withValues(
+                              alpha: 0.8,
+                            ), // Highlighted username
+                            fontSize: 13.0,
+                            fontWeight: FontWeight.w500,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 3),
+                        // --- PHONE NUMBER SECTION ---
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.phone_android_rounded,
+                              size: 12,
+                              color: Colors.white.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                phoneNumber,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  fontSize: 12.0,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -140,9 +169,11 @@ class SearchUserTile extends StatelessWidget {
   Widget _buildActionButton() {
     String text;
     IconData icon;
-    Color bgColor;
+    Color? bgColor;
     Color textColor;
-    Color? borderColor;
+    Color borderColor;
+    Gradient? buttonGradient;
+    List<BoxShadow>? buttonShadow;
 
     switch (status) {
       case FriendshipStatus.friends:
@@ -163,9 +194,27 @@ class SearchUserTile extends StatelessWidget {
       default:
         text = "Add";
         icon = Icons.person_add_alt_1_rounded;
-        bgColor = Colors.cyanAccent.withValues(alpha: 0.9);
         textColor = Colors.black;
-        borderColor = Colors.cyanAccent;
+        borderColor = Colors.transparent; // No border for the add button
+
+        // Use a sleek gradient instead of a solid color to make it unique
+        buttonGradient = const LinearGradient(
+          colors: [Colors.cyanAccent, Colors.cyan],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+
+        // Tighter, cleaner shadow to avoid the "bleeding" effect
+        buttonShadow = [
+          BoxShadow(
+            color: Colors.cyanAccent.withValues(
+              alpha: 0.25,
+            ), // Much lower alpha
+            blurRadius: 4, // Tighter blur
+            spreadRadius: 0,
+            offset: const Offset(0, 2),
+          ),
+        ];
         break;
     }
 
@@ -181,17 +230,10 @@ class SearchUserTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
             color: bgColor,
+            gradient: buttonGradient,
             borderRadius: BorderRadius.circular(20),
-            border: borderColor != null ? Border.all(color: borderColor) : null,
-            boxShadow: status == FriendshipStatus.none
-                ? [
-                    BoxShadow(
-                      color: Colors.cyanAccent.withValues(alpha: 0.4),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
+            border: Border.all(color: borderColor, width: 1.2),
+            boxShadow: buttonShadow,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
