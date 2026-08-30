@@ -6,14 +6,21 @@ import 'package:talkter/screens/user_registeration/setup/user_setup.dart';
 import 'package:talkter/screens/user_registeration/user_info/user_info.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  final int initialPage;
+  const RegisterPage({super.key, this.initialPage = 0});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final PageController _pageController = PageController();
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: widget.initialPage);
+  }
 
   void nextPage() {
     if (!_pageController.hasClients) return;

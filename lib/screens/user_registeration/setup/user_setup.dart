@@ -36,7 +36,7 @@ class _SetupAccountPageState extends ConsumerState<AccountSetupPage> {
 
     final user = ref.read(userProvider);
     final profilePic = ref.read(uploadPathProvider);
-    print(profilePic);
+    //print(profilePic);
     if (user == null || user.phone.isEmpty) {
       AppSnackBar.failure(
         context,
@@ -60,11 +60,11 @@ class _SetupAccountPageState extends ConsumerState<AccountSetupPage> {
     try {
       final cloudinary = ref.read(cloudinaryServiceProvider);
 
-      final keysFuture = KeyGeneration.generate();
-      final uploadFuture = cloudinary.uploadProfileImage(imageFile: profilePic);
+      final keys = KeyGeneration.generate();
+      final uploadRes = cloudinary.uploadProfileImage(imageFile: profilePic);
 
-      final keysPair = await keysFuture;
-      final cloudinaryResult = await uploadFuture;
+      final keysPair = await keys;
+      final cloudinaryResult = await uploadRes;
 
       if (!mounted) return;
 
@@ -72,11 +72,11 @@ class _SetupAccountPageState extends ConsumerState<AccountSetupPage> {
       await PrivateKeyStore.storePrivateKey(privatekey: privateKey);
 
       final publicKeyBytes = keysPair.keys.publicKey;
-      final publicKeyBase64 = base64Encode(publicKeyBytes);
+      final publicKey = base64Encode(publicKeyBytes);
 
       await DatabaseService().saveUserData(
         user: user,
-        publicKey: publicKeyBase64,
+        publicKey: publicKey,
         profilePic: cloudinaryResult,
       );
       await UserLocalStorage().saveUser(

@@ -7,13 +7,9 @@ import 'package:talkter/screens/user_registeration/OTP/input/otp_input_field.dar
 
 class OTP_Page extends ConsumerWidget {
   final VoidCallback onNext;
-  final VoidCallback onBack; // <-- Added onBack callback
+  final VoidCallback onBack;
 
-  const OTP_Page({
-    super.key,
-    required this.onNext,
-    required this.onBack, // <-- Required here
-  });
+  const OTP_Page({super.key, required this.onNext, required this.onBack});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

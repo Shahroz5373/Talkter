@@ -1,97 +1,145 @@
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:talkter/screens/home/home_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talkter/constants/custom_error_widget.dart';
+import 'package:talkter/screens/user_registeration/registration/page/register_page.dart';
+import 'package:talkter/widgets/bg_design/bg_design.dart';
+import 'package:talkter/widgets/glassmorphic_cotainer/glassmorphic_container.dart';
+import 'package:talkter/wrapper/riverpod/stream_riverpod.dart';
 
-// import 'dart:ui';
+class Wrapper extends ConsumerStatefulWidget {
+  const Wrapper({super.key});
 
-// import 'package:talkter/Services/riverpod/user_stream/stream_riverpod.dart';
-// import 'package:talkter/constants/custom_error_widget.dart';
-// import 'package:talkter/screens/home/home_screen.dart';
-// import 'package:talkter/screens/user_registeration/registration/register.dart';
+  @override
+  ConsumerState<Wrapper> createState() => _WrapperState();
+}
 
-// class Wrapper extends ConsumerWidget {
-//   const Wrapper({super.key});
+class _WrapperState extends ConsumerState<Wrapper> {
+  late Future<void> _refreshFuture;
 
-//   Future<void> _refreshUser() async {
-//     await FirebaseAuth.instance.currentUser?.reload();
-//   }
+  @override
+  void initState() {
+    super.initState();
 
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     return FutureBuilder(
-//       future: _refreshUser(),
-//       builder: (context, snapshot) {
-//         if (snapshot.connectionState == ConnectionState.waiting) {
-//           return Loading(
-//             child: Center(
-//               child: SpinKitFadingCircle(size: 80, color: Colors.white),
-//             ),
-//           );
-//         }
-//         final userState = ref.watch(userStateProvider);
+    _refreshFuture = _refreshUser();
+  }
 
-//         return userState.when(
-//           data: (user) => user == null ? RegisterPage() : HomeScreen(),
-//           error: (error, stackTrace) =>
-//               CustomErrorWidget(error: error.toString().trim()),
-//           loading: () =>
-//               Center(child: SpinKitDoubleBounce(size: 60, color: Colors.blue)),
-//         );
-//       },
-//     );
-//   }
-// }
+  Future<void> _refreshUser() async {
+    //await Future.delayed(const Duration(seconds: 15));
+    await FirebaseAuth.instance.currentUser?.reload();
+  }
 
-// class Loading extends StatelessWidget {
-//   final Widget child;
-//   const Loading({super.key, required this.child});
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _refreshFuture,
+      builder: (context, snapshot) {
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 600),
+          switchInCurve: Curves.easeOutExpo,
+          switchOutCurve: Curves.easeInExpo,
+          child: _buildStateContent(snapshot),
+        );
+      },
+    );
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Stack(
-//       children: [
-//         /// back image
-//         Container(
-//           decoration: const BoxDecoration(
-//             gradient: LinearGradient(
-//               colors: [Color(0xFF1B3038), Color(0xFF345763), Color(0xFF335969)],
-//               begin: Alignment.topLeft,
-//               end: Alignment.bottomRight,
-//             ),
-//           ),
-//         ),
-//         Positioned(
-//           top: 120,
-//           left: -50,
-//           child: Container(
-//             height: 200,
-//             width: 200,
-//             decoration: BoxDecoration(
-//               color: Colors.cyan.withValues(alpha: 0.5),
-//               shape: BoxShape.circle,
-//             ),
-//           ),
-//         ),
-//         Positioned(
-//           bottom: 70,
-//           right: -50,
-//           child: Container(
-//             height: 200,
-//             width: 200,
-//             decoration: BoxDecoration(
-//               color: Colors.indigoAccent.withValues(alpha: 0.5),
-//               shape: BoxShape.circle,
-//             ),
-//           ),
-//         ),
+  Widget _buildStateContent(AsyncSnapshot<void> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return _buildGlassLoading(
+        const SpinKitFadingCircle(size: 50, color: Colors.white),
+        message: "SYNCING",
+      );
+    }
 
-//         /// blur layer
-//         BackdropFilter(
-//           filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-//           child: Container(color: Colors.transparent, child: child),
-//         ),
-//       ],
-//     );
-//   }
-// }
+    final userStatus = ref.watch(authStatusProvider);
+
+    return userStatus.when(
+      data: (status) {
+        return switch (status) {
+          AppAuthState.authenticated => const HomeScreen(),
+          AppAuthState.unauthenticated => RegisterPage(initialPage: 0),
+          AppAuthState.requiresProfile => RegisterPage(initialPage: 2),
+        };
+      },
+      error: (error, stackTrace) => _buildGlassError(
+        error.toString().trim(),
+        key: const ValueKey('error_screen'),
+      ),
+      loading: () => _buildGlassLoading(
+        const SpinKitDoubleBounce(size: 50, color: Colors.blueAccent),
+        message: "SECURING CONNECTION",
+      ),
+    );
+  }
+
+  // Beautiful Splash-Style Loading Screen
+  Widget _buildGlassLoading(Widget spinner, {required String message}) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          const BGDesign(),
+          Center(
+            child: GlassMorphicContainer(
+              // Adjust these parameters to match your specific constructor
+              width: 220,
+              height: 220,
+
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  spinner,
+                  const SizedBox(height: 30),
+                  const Text(
+                    'TALKTER',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 6.0,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    message,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 10,
+                      letterSpacing: 2.0,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Consistent Aesthetic for Error State
+  Widget _buildGlassError(String error, {required Key key}) {
+    return Scaffold(
+      key: key,
+      body: Stack(
+        children: [
+          const BGDesign(),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: GlassMorphicContainer(
+                width: double.infinity,
+                height: 200,
+                child: Center(child: CustomErrorWidget(error: error)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
