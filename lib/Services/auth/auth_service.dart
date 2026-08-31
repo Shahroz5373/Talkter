@@ -10,7 +10,7 @@ class AuthService {
     required Function(String verificationId) onCodeSent,
     required Function(FirebaseAuthException error) onVerificationFailed,
   }) async {
-    debugPrint('📱 Sending phone to Firebase: $phoneNum');
+    debugPrint(' Sending phone to Firebase: $phoneNum');
 
     await _auth.verifyPhoneNumber(
       phoneNumber: phoneNum,
@@ -69,7 +69,8 @@ class AuthService {
   }
 
   AppUser? _userFromFirebase(User? user) {
-    return user == null ? null : AppUser(userId: user.uid);
+    if (user == null) return null;
+    return AppUser(userId: user.uid, phoneNumber: user.phoneNumber!);
   }
 
   Stream<AppUser?> get user {
@@ -78,7 +79,8 @@ class AuthService {
 }
 
 class AppUser {
-  String userId;
+  final String userId;
+  final String phoneNumber;
 
-  AppUser({required this.userId});
+  AppUser({required this.userId, required this.phoneNumber});
 }

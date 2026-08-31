@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:talkter/screens/user_registeration/registration/page/register_page.dart';
+//import 'package:talkter/screens/user_registeration/registration/page/register_page.dart';
 import 'package:talkter/widgets/glassmorphic_cotainer/glassmorphic_container.dart';
 import 'package:talkter/widgets/snack_bar/snack_bar.dart';
 
@@ -110,10 +110,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _handleSignOut() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const RegisterPage(initialPage: 0)),
-    );
+    // Navigator.pushReplacement(
+    //   context,
+    //   MaterialPageRoute(builder: (_) => const RegisterPage(initialPage: 0)),
+    // );
   }
 
   @override

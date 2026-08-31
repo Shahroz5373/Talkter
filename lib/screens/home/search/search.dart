@@ -29,7 +29,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _performSearch() async {
     final String myPhoneNo =
-        FirebaseAuth.instance.currentUser?.phoneNumber ?? '+923268594002';
+        FirebaseAuth.instance.currentUser?.phoneNumber ?? '';
 
     if (myPhoneNo.isEmpty) {
       AppSnackBar.failure(
@@ -40,7 +40,6 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
-    // 2. Validate using the state from your RegisterPhone widget
     if (_searchInputPhone.isEmpty || !_isSearchPhoneValid) {
       AppSnackBar.warning(
         context,
@@ -52,11 +51,10 @@ class _SearchScreenState extends State<SearchScreen> {
 
     setState(() {
       _isLoading = true;
-      _searchedUserData = null; // Clear previous search results
+      _searchedUserData = null;
     });
 
     try {
-      // 3. Fetch the searched user's document
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(_searchInputPhone)
@@ -167,67 +165,73 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           const SizedBox(height: 20),
           // --- REUSABLE PHONE INPUT + SEARCH BUTTON ---
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: RegisterPhone(
-                  onPhoneChanged: (phone) {
-                    setState(() {
-                      _searchInputPhone = phone;
-                    });
-                  },
-                  onValidationChanged: (isValid) {
-                    setState(() {
-                      _isSearchPhoneValid = isValid;
-                    });
-                  },
+          RegisterPhone(
+            onPhoneChanged: (phone) {
+              setState(() {
+                _searchInputPhone = phone;
+              });
+            },
+            onValidationChanged: (isValid) {
+              setState(() {
+                _isSearchPhoneValid = isValid;
+              });
+            },
+          ),
+          const SizedBox(height: 30),
+          GestureDetector(
+            onTap: _isLoading ? null : _performSearch,
+            child: Container(
+              // 1. Added padding so the button has a nice clickable area
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.cyanAccent.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.cyanAccent.withValues(alpha: 0.3),
+                  width: 1.5,
                 ),
               ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: _isLoading ? null : _performSearch,
-                child: Container(
-                  height: 55, // Matches roughly with your RegisterPhone height
-                  width: 55,
-                  decoration: BoxDecoration(
-                    color: Colors.cyanAccent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.cyanAccent.withValues(alpha: 0.3),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const Center(
-                          child: SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: SpinKitThreeBounce(
-                              color: Colors.cyanAccent,
-                              size: 50,
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 22,
+                      width: 70, // 2. Expanded width so the 3 dots have room
+                      child: SpinKitThreeBounce(
+                        color: Colors.cyanAccent,
+                        size:
+                            20, // 3. Scaled down the dots to fit inside the button
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.search,
+                          color: Colors.cyanAccent,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Search',
+                          style: GoogleFonts.inter(
+                            textStyle: TextStyle(
+                              color: Colors.cyanAccent.withValues(alpha: 0.9),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        )
-                      : const Icon(
-                          Icons.search_rounded,
-                          color: Colors.cyanAccent,
-                          size: 28,
                         ),
-                ),
-              ),
-            ],
+                      ],
+                    ),
+            ),
           ),
-
           const SizedBox(height: 30),
 
-          // --- SEARCH RESULTS ---
           if (_searchedUserData != null)
             SearchUserTile(
               name: _searchedUserData!['name'] ?? 'Unknown',
               username: _searchedUserData!['username'] ?? 'unknown',
               phoneNumber: _searchedPhone,
-              profilePicUrl: _searchedUserData!['profilePic'] ?? '',
+              profilePicUrl: _searchedUserData!['profile_pic_url'] ?? '',
               status: _currentStatus,
               onActionButtonPressed: () {
                 if (_currentStatus == FriendshipStatus.none) {

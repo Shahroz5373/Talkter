@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talkter/constants/test.dart';
 import 'package:talkter/firebase_options.dart';
 //import 'package:talkter/screens/home/home_screen.dart';
 //import 'package:talkter/screens/user_registeration/registration/page/register_page.dart';
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
       color: Colors.transparent,
       debugShowCheckedModeBanner: false,
       home: Wrapper(),
+      //home: ChatTestScreen(),
     );
   }
 }
