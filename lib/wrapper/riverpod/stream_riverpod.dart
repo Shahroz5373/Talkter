@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:talkter/Services/auth/auth_service.dart';
+import 'package:talkter/features/auth/service/auth_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 

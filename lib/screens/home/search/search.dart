@@ -3,10 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:talkter/Services/friends_action_service/friends_action_service.dart';
+import 'package:talkter/services/friends/friends_action_service/friends_action_service.dart';
 import 'package:talkter/screens/home/search/search_user_tile/search_user_tile.dart';
 import 'package:talkter/widgets/snack_bar/snack_bar.dart';
-import 'package:talkter/screens/user_registeration/Phone/input/phone_no_input.dart';
+import 'package:talkter/features/auth/screens/Phone/input/phone_no_input.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});

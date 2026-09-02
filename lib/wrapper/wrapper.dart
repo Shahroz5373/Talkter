@@ -3,7 +3,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talkter/screens/home/home_screen.dart';
 import 'package:talkter/constants/custom_error_widget.dart';
-import 'package:talkter/screens/user_registeration/registration/page/register_page.dart';
+import 'package:talkter/features/auth/screens/registration_page/register_page.dart';
 import 'package:talkter/widgets/bg_design/bg_design.dart';
 import 'package:talkter/widgets/glassmorphic_cotainer/glassmorphic_container.dart';
 import 'package:talkter/wrapper/riverpod/stream_riverpod.dart';

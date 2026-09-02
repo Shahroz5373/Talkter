@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:talkter/Services/friends_service/riverpod/friends_stream_provider.dart';
+import 'package:talkter/services/friends/riverpod/friends_stream_provider.dart';
 import 'package:talkter/screens/home/notifications/friend_req_tile/friend_req_tile.dart';
 
 class Notifications extends ConsumerWidget {

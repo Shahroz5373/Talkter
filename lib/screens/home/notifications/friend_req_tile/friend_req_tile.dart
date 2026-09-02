@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:talkter/Services/friends_action_service/friends_action_service.dart';
-import 'package:talkter/Services/friends_service/friends_service.dart';
+import 'package:talkter/services/friends/friends_action_service/friends_action_service.dart';
+import 'package:talkter/services/friends/friends_service_model/friends_service_model.dart';
 import 'package:talkter/widgets/glassmorphic_cotainer/glassmorphic_container.dart';
 import 'package:talkter/widgets/snack_bar/snack_bar.dart';
 
