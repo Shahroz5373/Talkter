@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:talkter/services/friends/riverpod/friends_stream_provider.dart';
-import 'package:talkter/screens/home/chat/user_tile/user_tile.dart';
+import 'package:talkter/screens/home/chats/user_tile/user_tile.dart';
 
-class ChatScreen extends ConsumerWidget {
-  const ChatScreen({super.key});
+class ChatsScreen extends ConsumerWidget {
+  const ChatsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the real-time stream of friends
     final friendsAsyncValue = ref.watch(friendsStreamProvider);
 
     return Container(
-      // Ensure the background is transparent so the parent Scaffold's background shows through
       color: Colors.transparent,
       child: friendsAsyncValue.when(
         data: (allFriends) {
-          // Filter to ONLY show accepted friends on the chat screen
           final acceptedFriends = allFriends
               .where((friend) => friend.status == 'accepted')
               .toList();
 
-          // --- EMPTY STATE ---
           if (acceptedFriends.isEmpty) {
             return Center(
               child: Column(
@@ -65,18 +62,20 @@ class ChatScreen extends ConsumerWidget {
             );
           }
 
-          // --- FRIENDS LIST ---
           return ListView.builder(
             padding: const EdgeInsets.only(top: 10, bottom: 20),
-            physics: const BouncingScrollPhysics(),
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
             itemCount: acceptedFriends.length,
+
             itemBuilder: (context, index) {
               final friend = acceptedFriends[index];
 
               return ChatFriendTile(
                 name: friend.name,
                 profilePicUrl: friend.profilePicUrl,
-                // Placeholder values until you implement actual messaging:
+
                 lastMessage: "Tap to start a secure chat!",
                 time: "",
                 unreadCount: 0,
@@ -86,19 +85,14 @@ class ChatScreen extends ConsumerWidget {
           );
         },
 
-        // --- LOADING STATE ---
         loading: () => const Center(
           child: SizedBox(
             height: 40,
             width: 40,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              color: Colors.cyanAccent,
-            ),
+            child: SpinKitCircle(color: Colors.cyanAccent, size: 20),
           ),
         ),
 
-        // --- ERROR STATE ---
         error: (error, stackTrace) => Center(
           child: Padding(
             padding: const EdgeInsets.all(20.0),

@@ -48,4 +48,4 @@ final class FriendsStreamProvider
   }
 }
 
-String _$friendsStreamHash() => r'd41c4cd0b7ba031570715ea94d24d6816d934dc6';
+String _$friendsStreamHash() => r'e407c25c55770fcc3eca339361b2a60517809bab';

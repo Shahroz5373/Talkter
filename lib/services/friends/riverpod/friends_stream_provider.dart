@@ -9,7 +9,6 @@ part 'friends_stream_provider.g.dart';
 Stream<List<FriendModel>> friendsStream(Ref ref) {
   final myPhoneNo = FirebaseAuth.instance.currentUser?.phoneNumber;
 
-  // If no user is logged in, yield an empty list instead of crashing
   if (myPhoneNo == null || myPhoneNo.isEmpty) {
     return Stream.value([]);
   }
@@ -22,8 +21,7 @@ Stream<List<FriendModel>> friendsStream(Ref ref) {
       .collection('friends')
       .snapshots()
       .asyncMap((snapshot) async {
-        // Create a list of Futures to fetch all user profiles simultaneously
-        final futures = snapshot.docs.map((doc) async {
+        final friends = snapshot.docs.map((doc) async {
           final friendDocData = doc.data();
           final friendPhone = friendDocData['phone'] as String?;
 
@@ -43,10 +41,8 @@ Stream<List<FriendModel>> friendsStream(Ref ref) {
           return null;
         });
 
-        // Wait for all profile fetches to complete
-        final resolvedFriends = await Future.wait(futures);
+        final friendsData = await Future.wait(friends);
 
-        // Remove any nulls (in case a user doc was deleted but friendship remained)
-        return resolvedFriends.whereType<FriendModel>().toList();
+        return friendsData.whereType<FriendModel>().toList();
       });
 }

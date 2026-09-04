@@ -7,7 +7,7 @@ import 'package:talkter/features/database/riverpod/file_path_provider/file_path_
 import 'package:talkter/features/database/riverpod/cloudinary_service/cloudinary_provider.dart';
 import 'package:talkter/features/database/firestore/firestore_service.dart';
 import 'package:talkter/services/encryption/keys/key_generation.dart';
-import 'package:talkter/services/encryption/private_key_storage/private_key_storage.dart';
+import 'package:talkter/features/database/private_key_storage/private_key_storage.dart';
 import 'package:talkter/features/database/local_storage/local_storage.dart';
 import 'package:talkter/widgets/glassmorphic_cotainer/glassmorphic_container.dart';
 import 'package:talkter/widgets/snack_bar/snack_bar.dart';

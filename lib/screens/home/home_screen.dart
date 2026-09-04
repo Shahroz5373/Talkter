@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:talkter/screens/home/chat/chat_screen.dart';
+import 'package:talkter/screens/home/chats/chats_screen.dart';
 import 'package:talkter/screens/home/notifications/notifications.dart';
 import 'package:talkter/screens/home/profile/profile_screen.dart';
 import 'package:talkter/screens/home/search/search.dart';
@@ -17,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int currentIndex = 0;
   final _pageController = PageController(initialPage: 0);
   List<Widget> screens = [
-    ChatScreen(),
+    ChatsScreen(),
     SearchScreen(),
     Notifications(),
     ProfileScreen(),
