@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:talkter/widgets/message_tile/message_tile.dart';
-// TODO: Import your single file containing GlassMessageTile and SwipeToReply here
 
 class ChatTestScreen extends StatefulWidget {
   const ChatTestScreen({super.key});
