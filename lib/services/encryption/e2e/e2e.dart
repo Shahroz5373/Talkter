@@ -5,9 +5,9 @@ import 'package:sodium/sodium.dart';
 
 class E2E {
   final Sodium sodium;
-  final KeyPair myKeyPair;
+  final SecureKey myPrivateKey;
 
-  E2E({required this.sodium, required this.myKeyPair});
+  E2E({required this.sodium, required this.myPrivateKey});
 
   Map<String, Uint8List> encrypt({
     required String message,
@@ -19,7 +19,7 @@ class E2E {
       message: Uint8List.fromList(utf8.encode(message)),
       nonce: nonce,
       publicKey: receiverPublicKey,
-      secretKey: myKeyPair.secretKey,
+      secretKey: myPrivateKey,
     );
 
     return {'cipher': cipher, 'nonce': nonce};
@@ -34,7 +34,7 @@ class E2E {
       cipherText: cipher,
       nonce: nonce,
       publicKey: senderPublicKey,
-      secretKey: myKeyPair.secretKey,
+      secretKey: myPrivateKey,
     );
 
     return utf8.decode(decrypted);

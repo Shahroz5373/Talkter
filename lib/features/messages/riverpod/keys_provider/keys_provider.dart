@@ -3,7 +3,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sodium/sodium.dart';
 import 'package:talkter/features/database/private_key_storage/private_key_storage.dart';
 import 'package:talkter/services/encryption/keys/key_generation.dart';
-
+import 'dart:convert';
+import 'dart:typed_data';
 part 'keys_provider.g.dart';
 
 @Riverpod(keepAlive: true)
@@ -21,7 +22,7 @@ class KeyProvider extends _$KeyProvider {
     return privateKey;
   }
 
-  Future<String?> getFriendPublicKey({required String friendsPhone}) async {
+  Future<Uint8List?> getFriendPublicKey({required String friendsPhone}) async {
     friendsPhone = friendsPhone.trim();
 
     if (friendsPhone.isEmpty) {
@@ -40,7 +41,12 @@ class KeyProvider extends _$KeyProvider {
     }
 
     final data = friendData.data();
+    final publicKey = data?['public_key'];
 
-    return data?['public_key'] as String?;
+    if (publicKey == null || publicKey is! String) {
+      return null;
+    }
+
+    return base64Decode(publicKey);
   }
 }

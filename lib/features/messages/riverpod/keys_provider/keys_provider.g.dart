@@ -33,7 +33,7 @@ final class KeyProviderProvider
   KeyProvider create() => KeyProvider();
 }
 
-String _$keyProviderHash() => r'c319344a15586f1cf50ed6ec5700a7495919fb0c';
+String _$keyProviderHash() => r'e542780c21706d745c0af6bee98100bcc211e3e0';
 
 abstract class _$KeyProvider extends $AsyncNotifier<SecureKey?> {
   FutureOr<SecureKey?> build();

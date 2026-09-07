@@ -2,32 +2,34 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum MessageStatus { sent, delivered, read }
 
-class MessageModel {
+class MessageServiceModel {
   final String senderId;
   final String receiverId;
+  final String nonce;
   final String cipherText;
   final DateTime timestamp;
   final MessageStatus messageStatus;
 
-  MessageModel({
+  MessageServiceModel({
     required this.senderId,
     required this.receiverId,
+    required this.nonce,
     required this.cipherText,
     required this.timestamp,
     required this.messageStatus,
   });
 
-  factory MessageModel.fromFirestore(
+  factory MessageServiceModel.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> document,
   ) {
     final data = document.data();
     if (data == null) throw Exception('Message document is empty');
 
-    return MessageModel(
+    return MessageServiceModel(
       senderId: data['senderId'] ?? '',
       receiverId: data['receiverId'] ?? '',
+      nonce: data['nonce'] ?? '',
       cipherText: data['cipherText'] ?? '',
-
       timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
       messageStatus: _parseStatus(data['status']),
     );
@@ -37,6 +39,7 @@ class MessageModel {
     return {
       'senderId': senderId,
       'receiverId': receiverId,
+      'nonce': nonce,
       'cipherText': cipherText,
       'timestamp': FieldValue.serverTimestamp(),
       'status': messageStatus.name,

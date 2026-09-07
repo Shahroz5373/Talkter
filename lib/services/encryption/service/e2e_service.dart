@@ -7,7 +7,7 @@ class EncryptionService {
 
   EncryptionService(this.encryption);
 
-  Map<String, Uint8List> sendMessage({
+  Map<String, Uint8List> encryptMessage({
     required String message,
     required Uint8List receiverPublicKey,
   }) {
@@ -17,7 +17,7 @@ class EncryptionService {
     );
   }
 
-  String receiveMessage({
+  String decryptMessage({
     required Uint8List cipher,
     required Uint8List nonce,
     required Uint8List senderPublicKey,

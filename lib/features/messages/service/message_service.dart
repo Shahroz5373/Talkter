@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:talkter/features/messages/model/message_model.dart';
+import 'package:talkter/features/messages/model/message_service_model/message_service_model.dart';
 
 class MessageService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> sendMessage({required MessageModel message}) async {
+  Future<void> sendMessage({required MessageServiceModel message}) async {
     final chatDocId = _generateDocId(
       userA: message.senderId,
       userB: message.receiverId,
@@ -43,7 +43,7 @@ class MessageService {
     return '${participants[0]}_${participants[1]}';
   }
 
-  Stream<List<MessageModel>> receieveMessage({
+  Stream<List<MessageServiceModel>> receieveMessage({
     required String myId,
     required String friendId,
   }) {
@@ -56,7 +56,7 @@ class MessageService {
         .snapshots()
         .map((snapshot) {
           return snapshot.docs.map((doc) {
-            return MessageModel.fromFirestore(doc);
+            return MessageServiceModel.fromFirestore(doc);
           }).toList();
         });
   }
