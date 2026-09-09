@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:talkter/features/messages/screen/message_page.dart';
 import 'package:talkter/services/friends/riverpod/friends_stream_provider.dart';
 import 'package:talkter/screens/home/chats/user_tile/user_tile.dart';
 
@@ -72,14 +73,29 @@ class ChatsScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final friend = acceptedFriends[index];
 
-              return ChatFriendTile(
-                name: friend.name,
-                profilePicUrl: friend.profilePicUrl,
-
-                lastMessage: "Tap to start a secure chat!",
-                time: "",
-                unreadCount: 0,
-                isOnline: false,
+              return GestureDetector(
+                behavior: HitTestBehavior
+                    .opaque, // Ensures the whole tile is clickable
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MessageScreen(
+                        friendId: friend.phone,
+                        friendName: friend.name,
+                        profilePic: friend.profilePicUrl,
+                      ),
+                    ),
+                  );
+                },
+                child: ChatFriendTile(
+                  name: friend.name,
+                  profilePicUrl: friend.profilePicUrl,
+                  lastMessage: "Tap to start a secure chat!",
+                  time: "",
+                  unreadCount: 0,
+                  isOnline: false,
+                ),
               );
             },
           );

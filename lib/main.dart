@@ -24,7 +24,6 @@ class MyApp extends StatelessWidget {
       color: Colors.transparent,
       debugShowCheckedModeBanner: false,
       home: Wrapper(),
-      //home: ChatTestScreen(),
     );
   }
 }

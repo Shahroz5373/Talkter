@@ -2,16 +2,16 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:sodium/sodium_sumo.dart';
 import 'package:talkter/features/messages/model/message_service_model/message_service_model.dart';
-import 'package:talkter/features/messages/service/message_service.dart';
+import 'package:talkter/features/messages/service/message_service/message_service.dart';
 import 'package:talkter/services/encryption/e2e/e2e.dart';
 import 'package:talkter/services/encryption/keys/key_generation.dart';
 import 'package:talkter/services/encryption/service/e2e_service.dart';
 
-class MessageControllerModel {
+class MessageController {
   final dynamic _myId;
   final dynamic _friendId;
 
-  MessageControllerModel({required this._myId, required this._friendId});
+  MessageController({required this._myId, required this._friendId});
 
   Future<void> sendEncryptedMessage({
     required String message,
