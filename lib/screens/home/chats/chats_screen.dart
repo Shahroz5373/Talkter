@@ -74,8 +74,7 @@ class ChatsScreen extends ConsumerWidget {
               final friend = acceptedFriends[index];
 
               return GestureDetector(
-                behavior: HitTestBehavior
-                    .opaque, // Ensures the whole tile is clickable
+                behavior: HitTestBehavior.opaque,
                 onTap: () {
                   Navigator.push(
                     context,

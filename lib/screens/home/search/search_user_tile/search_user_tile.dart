@@ -154,7 +154,6 @@ class SearchUserTile extends StatelessWidget {
 
                   const SizedBox(width: 10),
 
-                  // --- ACTION BUTTON SECTION ---
                   if (status != FriendshipStatus.self) _buildActionButton(),
                 ],
               ),

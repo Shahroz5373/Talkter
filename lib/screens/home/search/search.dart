@@ -153,7 +153,6 @@ class _SearchScreenState extends State<SearchScreen> {
     return SafeArea(
       child: Column(
         children: [
-          // --- CUSTOM HEADER ---
           Text(
             'Add Friends',
             style: GoogleFonts.inter(
@@ -164,7 +163,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          // --- REUSABLE PHONE INPUT + SEARCH BUTTON ---
+
           RegisterPhone(
             onPhoneChanged: (phone) {
               setState(() {
@@ -181,7 +180,6 @@ class _SearchScreenState extends State<SearchScreen> {
           GestureDetector(
             onTap: _isLoading ? null : _performSearch,
             child: Container(
-              // 1. Added padding so the button has a nice clickable area
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
                 color: Colors.cyanAccent.withValues(alpha: 0.1),
@@ -194,11 +192,10 @@ class _SearchScreenState extends State<SearchScreen> {
               child: _isLoading
                   ? const SizedBox(
                       height: 22,
-                      width: 70, // 2. Expanded width so the 3 dots have room
+                      width: 70,
                       child: SpinKitThreeBounce(
                         color: Colors.cyanAccent,
-                        size:
-                            20, // 3. Scaled down the dots to fit inside the button
+                        size: 20,
                       ),
                     )
                   : Row(

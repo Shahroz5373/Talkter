@@ -21,7 +21,7 @@ class MessagesProvider extends _$MessagesProvider {
 
   @override
   FutureOr<List<Map<String, dynamic>>> build({required String friendId}) async {
-    final myId = FirebaseAuth.instance.currentUser?.uid;
+    final myId = FirebaseAuth.instance.currentUser?.phoneNumber;
 
     if (myId == null) {
       throw Exception('User not logged in');
