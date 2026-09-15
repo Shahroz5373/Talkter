@@ -15,7 +15,6 @@ class MessagesProvider extends _$MessagesProvider {
 
   StreamSubscription<List<Map<String, dynamic>>>? _messagesSubscription;
 
-  // Saved keys so we can reuse them when sending messages.
   late final SecureKey _myPrivateKey;
   late final Uint8List _friendPublicKey;
 
@@ -27,7 +26,6 @@ class MessagesProvider extends _$MessagesProvider {
       throw Exception('User not logged in');
     }
 
-    // Get my private key.
     final privateKey = await ref.read(keyProviderProvider.future);
 
     if (privateKey == null) {
@@ -36,7 +34,6 @@ class MessagesProvider extends _$MessagesProvider {
 
     _myPrivateKey = privateKey;
 
-    // Get friend's public key.
     final publicKey = await ref
         .read(keyProviderProvider.notifier)
         .getFriendPublicKey(friendsPhone: friendId);
@@ -47,10 +44,8 @@ class MessagesProvider extends _$MessagesProvider {
 
     _friendPublicKey = publicKey;
 
-    // Create controller for this conversation.
     _controller = MessageController(myId: myId, friendId: friendId);
 
-    // Start receiving/decrypting messages.
     final messagesStream = _controller.getDecryptedMessagesStream(
       myPrivateKey: _myPrivateKey,
       friendPublicKey: _friendPublicKey,
@@ -62,7 +57,6 @@ class MessagesProvider extends _$MessagesProvider {
       (messages) {
         state = AsyncData(messages);
 
-        // Complete build() with the first message list.
         if (!completer.isCompleted) {
           completer.complete(messages);
         }
@@ -76,7 +70,6 @@ class MessagesProvider extends _$MessagesProvider {
       },
     );
 
-    // Cancel the stream when provider is disposed.
     ref.onDispose(() {
       _messagesSubscription?.cancel();
     });
@@ -96,7 +89,7 @@ class MessagesProvider extends _$MessagesProvider {
         friendPublicKey: _friendPublicKey,
       );
     } catch (e) {
-      print('Error sending message: $e');
+      //print('Error sending message: $e');
       rethrow;
     }
   }

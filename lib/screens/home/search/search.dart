@@ -18,7 +18,6 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final FriendsActionService _friendsService = FriendsActionService();
 
-  // State variables for the phone input component
   String _searchInputPhone = '';
   bool _isSearchPhoneValid = false;
 
@@ -66,7 +65,6 @@ class _SearchScreenState extends State<SearchScreen> {
         if (_searchInputPhone == myPhoneNo) {
           status = FriendshipStatus.self;
         } else {
-          // 4. Optimized single-read check for friendship status
           final friendDoc = await FirebaseFirestore.instance
               .collection('users')
               .doc(myPhoneNo)
@@ -109,7 +107,6 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
-  /// Sends a friend request and updates UI
   Future<void> _sendRequest() async {
     final String myPhoneNo =
         FirebaseAuth.instance.currentUser?.phoneNumber ?? '';

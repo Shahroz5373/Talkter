@@ -8,39 +8,35 @@ class Notifications extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Listen to the unified friends stream
     final friendsAsyncValue = ref.watch(friendsStreamProvider);
 
     return Container(
-      // Transparent background so the parent Scaffold's background is visible
       color: Colors.transparent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- HEADER ---
           const Padding(
             padding: EdgeInsets.only(left: 20, top: 10, bottom: 20),
-            child: Text(
-              'Friend Requests',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.2,
+            child: Center(
+              child: Text(
+                'Friend Requests',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
           ),
 
-          // --- CONTENT ---
           Expanded(
             child: friendsAsyncValue.when(
               data: (allFriends) {
-                // Filter the stream to ONLY show incoming requests
                 final pendingRequests = allFriends
                     .where((friend) => friend.status == 'pending')
                     .toList();
 
-                // --- EMPTY STATE ---
                 if (pendingRequests.isEmpty) {
                   return Center(
                     child: Column(
@@ -84,7 +80,6 @@ class Notifications extends ConsumerWidget {
                   );
                 }
 
-                // --- REQUESTS LIST ---
                 return ListView.builder(
                   padding: const EdgeInsets.only(bottom: 20),
                   physics: const BouncingScrollPhysics(),
@@ -96,7 +91,6 @@ class Notifications extends ConsumerWidget {
                 );
               },
 
-              // --- LOADING STATE ---
               loading: () => const Center(
                 child: SizedBox(
                   height: 40,
@@ -108,7 +102,6 @@ class Notifications extends ConsumerWidget {
                 ),
               ),
 
-              // --- ERROR STATE ---
               error: (error, stackTrace) => Center(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),

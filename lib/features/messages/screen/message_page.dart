@@ -6,7 +6,7 @@ import 'package:talkter/features/messages/riverpod/messages_provider/messages_pr
 import 'package:talkter/widgets/bg_design/bg_design.dart';
 
 class MessageScreen extends ConsumerStatefulWidget {
-  final String friendId; // ADDED: We need this for the provider!
+  final String friendId;
   final String friendName;
   final String? profilePic;
 
@@ -54,7 +54,6 @@ class _MessageScreenState extends ConsumerState<MessageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Watch your provider using the friendId
     final messagesAsyncValue = ref.watch(
       messagesProviderProvider(friendId: widget.friendId),
     );
@@ -69,7 +68,6 @@ class _MessageScreenState extends ConsumerState<MessageScreen> {
           body: Column(
             children: [
               Expanded(
-                // 2. Handle the Riverpod AsyncValue states
                 child: messagesAsyncValue.when(
                   data: (messages) {
                     if (messages.isEmpty) {
@@ -85,7 +83,6 @@ class _MessageScreenState extends ConsumerState<MessageScreen> {
                       controller: _scrollController,
                       padding: const EdgeInsets.only(top: 100, bottom: 20),
                       itemCount: messages.length,
-                      // If your stream returns newest messages last, you might want to reverse this
                       itemBuilder: (context, index) {
                         final msgData = messages[index];
                         return _buildMessageBubble(msgData);
@@ -187,13 +184,11 @@ class _MessageScreenState extends ConsumerState<MessageScreen> {
     );
   }
 
-  // 3. Map the real data to the UI bubble
   Widget _buildMessageBubble(Map<String, dynamic> msgData) {
     final text = msgData['text'] as String;
     final isMe = msgData['isMe'] as bool;
-    final model = msgData['model']; // Your MessageServiceModel
+    final model = msgData['model'];
 
-    // Fallback time if model structure differs slightly
     final timeString = model != null && model.timestamp != null
         ? _formatTime(model.timestamp)
         : "";
@@ -323,7 +318,6 @@ class _MessageScreenState extends ConsumerState<MessageScreen> {
                                     )
                                     .sendMessage(text);
 
-                                // Optional: Auto-scroll to bottom after sending
                                 if (_scrollController.hasClients) {
                                   _scrollController.animateTo(
                                     _scrollController.position.maxScrollExtent,
@@ -332,7 +326,6 @@ class _MessageScreenState extends ConsumerState<MessageScreen> {
                                   );
                                 }
                               } catch (e) {
-                                // Handle error silently or show a snackbar
                                 debugPrint("Failed to send: $e");
                               }
                             }
